@@ -11,6 +11,5 @@ pytube
 5. Activate the virtual environment with `venv\Scripts\activate`
 6. Upgrade pip with `python -m pip install --upgrade pip`
 7. Install dependencies with `pip install -r requirements.txt`
-8. Run the app with `python main.py`
 
 You can deactivate the virtual environment by entering the command `deactivate`
