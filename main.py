@@ -1,12 +1,13 @@
 import argparse
 import os
 import re
+from pytubefix import YouTube
 
 parser = argparse.ArgumentParser()
 
 def url_check(url):
     # Checks if URL has key words to determine if it is a Youtube URL
-    if "youtube.com" not in url:
+    if "youtube.com" not in url and "youtu.be" not in url:
          parser.error("Not A Youtube URL. Please try again")       
     return url
 
@@ -26,7 +27,7 @@ def resolution_check(resolution):
      res_pattern = r"[0-9]?[0-9]{3}p"
      if not re.fullmatch(res_pattern, resolution):
          resolution = "720p"
-         print("Not a valid resolution. Defaulting to 720p")
+         print("Not a valid resolution. Please try again")
      return resolution
 
 
@@ -40,4 +41,13 @@ url = args.url
 output = args.output
 resolution = args.resolution
 
-print("You selected:", url, output, resolution)
+streams = YouTube(url).streams
+video = streams.filter(resolution=resolution, progressive=True).first()
+if video is None:
+    print("Chosen resolution not available\nDefaulting to highest available")
+    video = streams.filter(progressive=True).get_highest_resolution()
+    resolution = video.resolution
+
+print(f"\nDownload Information:\n url: {url}\n output: {output}\n resolution: {resolution}\n")
+
+video.download(output_path=output)
