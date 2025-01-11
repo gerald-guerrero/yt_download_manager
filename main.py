@@ -2,6 +2,7 @@ import argparse
 import os
 import re
 from pytubefix import YouTube
+from pytubefix.exceptions import VideoUnavailable
 
 parser = argparse.ArgumentParser()
 
@@ -41,7 +42,12 @@ url = args.url
 output = args.output
 resolution = args.resolution
 
-streams = YouTube(url).streams
+try:
+    streams = YouTube(url).streams
+except VideoUnavailable as e:
+    print("\nNot a valid URL. Please provide a valid URL\n")
+    raise e
+
 video = streams.filter(resolution=resolution, progressive=True).first()
 if video is None:
     print("Chosen resolution not available\nDefaulting to highest available")
@@ -50,4 +56,7 @@ if video is None:
 
 print(f"\nDownload Information:\n url: {url}\n output: {output}\n resolution: {resolution}\n")
 
-video.download(output_path=output)
+try:
+    video.download(output_path=output)
+except:
+    raise Exception("Download has failed.")
