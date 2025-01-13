@@ -37,7 +37,7 @@ def video_progress(stream, data_chunk, bytes_remaining):
     print(f"{progress}%")
 
 def video_completed(stream, file_path):
-    print("Download completed")
+    print("Download completed.\nLocation:", file_path)
 
 parser.add_argument(
     "url", 
@@ -63,11 +63,11 @@ resolution = args.resolution
 
 try:
     yt = YouTube(url, on_progress_callback=video_progress, on_complete_callback=video_completed)
+    video = yt.streams.filter(resolution=resolution, progressive=True).first()
 except VideoUnavailable as e:
-    print("\nNot a valid URL. Please provide a valid URL\n")
+    print("\nInvalid URL. Please try again with a valid URL\n")
     raise e
 
-video = yt.streams.filter(resolution=resolution, progressive=True).first()
 if video is None:
     print("Chosen resolution not available\nDefaulting to highest available")
     video = yt.streams.filter(progressive=True).get_highest_resolution()
@@ -78,4 +78,4 @@ print(f"\nDownload Information:\n url: {url}\n output: {output}\n resolution: {r
 try:
     video.download(output_path=output)
 except:
-    raise Exception("Download has failed.")
+    raise Exception("Download has failed. Please try again")
