@@ -31,10 +31,29 @@ def resolution_check(resolution):
          print("Not a valid resolution. Please try again")
      return resolution
 
+def video_progress(stream, data_chunk, bytes_remaining):
+    current_bytes = stream.filesize - bytes_remaining
+    progress = int((current_bytes / stream.filesize) * 100)
+    print(f"{progress}%")
 
-parser.add_argument("url", help="URL of the Youtube video you want to download", type=url_check)
-parser.add_argument("--output", help="Destination directory for the video", type=output_check)
-parser.add_argument("--resolution", help="Chosen resolution for video", type=resolution_check)
+def video_completed(stream, file_path):
+    print("Download completed")
+
+parser.add_argument(
+    "url", 
+    help="URL of the Youtube video. Use format: \"URL\"", 
+    type=url_check
+    )
+parser.add_argument(
+    "--output", 
+    help="Destination directory for downloads. Use format: --url \"path\"", 
+    type=output_check
+    )
+parser.add_argument(
+    "--resolution", 
+    help="Chosen resolution for video. Use format: --resolution ###p or ####p",
+    type=resolution_check
+    )
 parser.set_defaults(output=os.path.join(os.getcwd(), "downloads"), resolution = "720p")
 args = parser.parse_args()
 
@@ -43,15 +62,15 @@ output = args.output
 resolution = args.resolution
 
 try:
-    streams = YouTube(url).streams
+    yt = YouTube(url, on_progress_callback=video_progress, on_complete_callback=video_completed)
 except VideoUnavailable as e:
     print("\nNot a valid URL. Please provide a valid URL\n")
     raise e
 
-video = streams.filter(resolution=resolution, progressive=True).first()
+video = yt.streams.filter(resolution=resolution, progressive=True).first()
 if video is None:
     print("Chosen resolution not available\nDefaulting to highest available")
-    video = streams.filter(progressive=True).get_highest_resolution()
+    video = yt.streams.filter(progressive=True).get_highest_resolution()
     resolution = video.resolution
 
 print(f"\nDownload Information:\n url: {url}\n output: {output}\n resolution: {resolution}\n")
