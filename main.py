@@ -26,7 +26,7 @@ def output_check(output):
             os.mkdir(output)
         except:
             parser.error("Not a valid directory. Please try again")
-    
+
     return output
 
 def resolution_check(resolution):
@@ -84,7 +84,7 @@ resolution = args.resolution
 try: # Searches for video based on URL and filters for resolution and files with audio and video
     yt = YouTube(url, on_progress_callback=video_progress, on_complete_callback=video_completed)
     video = yt.streams.filter(resolution=resolution, progressive=True).first()
-except VideoUnavailable as e: # Raises error if URL is invalid
+except VideoUnavailable as e: # Raises error if URL is not a valid youtube video
     print("\nInvalid URL. Please try again with a valid URL\n")
     raise e
 
@@ -97,5 +97,11 @@ print(f"\nDownload Information:\n url: {url}\n output: {output}\n resolution: {r
 
 try: # Begins downloading the video
     video.download(output_path=output)
-except: # Raises an error if the download has failed or is interrupted
-    raise Exception("Download has failed. Please try again")
+except ConnectionAbortedError as e: # Raises an error if the download has failed or is interrupted
+    print("\nConnection was interrupted while downloading the file. Please try again\n")
+    raise e
+except PermissionError as e: # Raises an error if the user does not have write access to the folder
+    print("\n You do not have \'write\' access to the designated directory\n")
+    raise e
+except Exception as e: # Raises an error if any other connection issue occurs when downloading
+    raise e
